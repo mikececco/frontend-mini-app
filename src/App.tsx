@@ -67,6 +67,8 @@ function App() {
       }
       const data = await response.json();
       setBookmarks(data);
+      console.log('FETCHED!');
+      
     } catch (error) {
         console.error('Error fetching bookmarks:', error);
         setError('Failed to fetch bookmarks');
