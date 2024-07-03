@@ -14,40 +14,25 @@ interface Bookmark {
 }
 
 function App() {
-  const [userId, setUserId] = useState<number>(0); // or any initial number value
-  const [themeParams, setThemeParams] = useState({});
-  const [initData, setInitData] = useState({});
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-
-    // Initialize Telegram WebApp
     WebApp.ready();
 
-    // Set initial data
-    setInitData(WebApp.initData);
-    setThemeParams(WebApp.themeParams);
-    console.log(WebApp.initData);
-    // Set user ID if available
     if (WebApp.initDataUnsafe.user) {
-      console.log('INSIDE');
       const id = WebApp.initDataUnsafe.user.id;
-      setUserId(id);
-      fetchUserBookmarksFirst10(id);
+      console.log(id);
+
     }
-    console.log('SKIPPED');
+    fetchUserBookmarksFirst10(352550606);
 
-    // Event listeners
-    WebApp.onEvent('themeChanged', () => setThemeParams(WebApp.themeParams));
     WebApp.onEvent('viewportChanged', setViewportData);
-
-    // Set header color
     WebApp.setHeaderColor('secondary_bg_color');
 
     return () => {
-      // Clean up event listeners if necessary
+      WebApp.offEvent('viewportChanged', setViewportData);
     };
   }, []);
 
@@ -63,39 +48,56 @@ function App() {
     try {
       const response = await fetch(`https://backend-mini-app-buildpsace-2d3f53b0a656.herokuapp.com/api/bookmarks/${userId}`);
       if (!response.ok) {
-          throw new Error('Network response was not ok');
+        throw new Error('Network response was not ok');
       }
-      const data = await response.json();
+      const data: Bookmark[] = await response.json();
       setBookmarks(data);
       console.log('FETCHED!');
-      
     } catch (error) {
-        console.error('Error fetching bookmarks:', error);
-        setError('Failed to fetch bookmarks');
+      console.error('Error fetching bookmarks:', error);
+      setError('Failed to fetch bookmarks');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }
 
+  // Group bookmarks by folder
+  const groupedBookmarks = bookmarks.reduce<{ [folder: string]: Bookmark[] }>((acc, bookmark) => {
+    const { folder, name } = bookmark;
+    if (name) {
+      if (!acc[folder]) {
+        acc[folder] = [];
+      }
+      acc[folder].push(bookmark);
+    }
+    return acc;
+  }, {});
+
   return (
-    <div style={{backgroundColor: Telegram.WebApp.backgroundColor}}>
-      <h1>Telegram WebApp Demo</h1>
-      <p>User ID: {userId}</p>
-      {loading ? (
-        <p>Loading bookmarks...</p>
-      ) : error ? (
-        <p>Error: {error}</p>
-      ) : (
-        <ul>
-          {bookmarks.map(bookmark => (
-            <li key={bookmark.id}>{bookmark.folder}</li>
-          ))}
-        </ul>
-      )}
-      <h2>Init data:</h2>
-      <pre>{JSON.stringify(initData, null, 2)}</pre>
-      <h2>Theme Params:</h2>
-      <pre>{JSON.stringify(themeParams, null, 2)}</pre>
+    <div style={{ backgroundColor: Telegram.WebApp.backgroundColor }}>
+      <h1>Your Active Bookmarks</h1>
+      <div className="list--centre-justify">
+        {loading ? (
+          <p>Loading bookmarks...</p>
+        ) : error ? (
+          <p>Error: {error}</p>
+        ) : (
+          Object.keys(groupedBookmarks).map(folder => (
+            <div key={folder}>
+              <h2>{folder}</h2>
+              <ul>
+                {groupedBookmarks[folder].map(bookmark => (
+                  <li key={bookmark.id}>
+                    <a href={bookmark.link} className="menu-link is-active">
+                      {bookmark.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #000000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,11 +23,12 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  margin: 0; /* Remove default margin */
+  display: flex; /* Enable flexbox layout */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  min-width: 320px; /* Set minimum width */
+  min-height: 100vh; /* Set minimum height to cover the full viewport height */
 }
 
 h1 {
