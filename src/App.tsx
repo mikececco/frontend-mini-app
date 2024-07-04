@@ -24,9 +24,8 @@ function App() {
 
     if (WebApp.initDataUnsafe.user) {
       const id = WebApp.initDataUnsafe.user.id;
-      console.log(id);
+      fetchUserBookmarksFirst10(id);
     }
-    fetchUserBookmarksFirst10(352550606);
 
     WebApp.onEvent('viewportChanged', setViewportData);
     WebApp.setHeaderColor('secondary_bg_color');
