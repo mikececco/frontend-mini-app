@@ -17,6 +17,7 @@ function App() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     WebApp.ready();
@@ -24,7 +25,6 @@ function App() {
     if (WebApp.initDataUnsafe.user) {
       const id = WebApp.initDataUnsafe.user.id;
       console.log(id);
-
     }
     fetchUserBookmarksFirst10(352550606);
 
@@ -73,29 +73,50 @@ function App() {
     return acc;
   }, {});
 
+  const truncateName = (name: string, maxLength: number) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength) + '...';
+  };
+
   return (
     <div style={{ backgroundColor: Telegram.WebApp.backgroundColor }}>
       <h1>Your Active Bookmarks</h1>
       <div className="list--centre-justify">
+        <input
+          type="text"
+          placeholder="Looking for..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         {loading ? (
           <p>Loading bookmarks...</p>
         ) : error ? (
           <p>Error: {error}</p>
         ) : (
-          Object.keys(groupedBookmarks).map(folder => (
-            <div key={folder}>
-              <h2>{folder}</h2>
-              <ul>
-                {groupedBookmarks[folder].map(bookmark => (
-                  <li key={bookmark.id}>
-                    <a href={bookmark.link} className="menu-link is-active">
-                      {bookmark.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
+          Object.keys(groupedBookmarks).map(folder => {
+            const filteredBookmarks = groupedBookmarks[folder].filter(bookmark =>
+              bookmark.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredBookmarks.length === 0) {
+              return null; // Skip rendering this folder if no bookmarks match the search term
+            }
+
+            return (
+              <div key={folder}>
+                <h2>{folder}</h2>
+                <ul>
+                  {filteredBookmarks.map(bookmark => (
+                    <li key={bookmark.id}>
+                      <a href={bookmark.link} className="menu-link is-active">
+                        {truncateName(bookmark.name, 40)}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })
         )}
       </div>
     </div>
