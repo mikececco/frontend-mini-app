@@ -78,7 +78,7 @@ function App() {
   };
 
   return (
-    <div style={{ backgroundColor: Telegram.WebApp.backgroundColor }}>
+    <div>
       <h1>Your Active Bookmarks</h1>
       <div className="list--centre-justify">
         <input
