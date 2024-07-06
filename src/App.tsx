@@ -9,12 +9,22 @@ interface Bookmark {
   updated_at: Date;
   created_at: Date;
   content: string;
-  folder: string;
+  folderId: number;
+  name: string;
+  folder: Folder; // Include the folder object in Bookmark interface
+}
+
+interface Folder {
+  id: number;
+  userId: number;
+  updated_at: Date;
+  created_at: Date;
   name: string;
 }
 
 function App() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -24,7 +34,10 @@ function App() {
 
     if (WebApp.initDataUnsafe.user) {
       const id = WebApp.initDataUnsafe.user.id;
-      fetchUserBookmarksFirst10(id);
+      console.log(id);
+
+      // fetchUserData(352550606);
+      fetchUserData(id);
     }
 
     WebApp.onEvent('viewportChanged', setViewportData);
@@ -42,32 +55,52 @@ function App() {
     console.log(`Is Expanded: ${WebApp.isExpanded}`);
   };
 
-  async function fetchUserBookmarksFirst10(userId: number) {
+  async function fetchUserData(userId: number) {
     setLoading(true);
     try {
-      const response = await fetch(`https://backend-mini-app-buildpsace-2d3f53b0a656.herokuapp.com/api/bookmarks/${userId}`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      const [bookmarksResponse, foldersResponse] = await Promise.all([
+        fetch(`https://backend-mini-app-buildpsace-2d3f53b0a656.herokuapp.com/api/bookmarks/${userId}`),
+        fetch(`https://backend-mini-app-buildpsace-2d3f53b0a656.herokuapp.com/api/folders/${userId}`), // Adjust endpoint as per your API structure
+      ]);
+
+      if (!bookmarksResponse.ok || !foldersResponse.ok) {
+        throw new Error('Failed to fetch data');
       }
-      const data: Bookmark[] = await response.json();
-      setBookmarks(data);
+
+      const bookmarksData: Bookmark[] = await bookmarksResponse.json();
+      const foldersData: Folder[] = await foldersResponse.json();
+
+      // Map folders data to an object for easy lookup
+      const foldersMap: { [key: number]: Folder } = {};
+      foldersData.forEach(folder => {
+        foldersMap[folder.id] = folder;
+      });
+
+      // Assign folders to bookmarks
+      const bookmarksWithFolders: Bookmark[] = bookmarksData.map(bookmark => ({
+        ...bookmark,
+        folder: foldersMap[bookmark.folderId], // Assign folder object using folderId
+      }));
+
+      setBookmarks(bookmarksWithFolders);
+      setFolders(foldersData);
       console.log('FETCHED!');
     } catch (error) {
-      console.error('Error fetching bookmarks:', error);
-      setError('Failed to fetch bookmarks');
+      console.error('Error fetching data:', error);
+      setError('Failed to fetch data');
     } finally {
       setLoading(false);
     }
   }
-
+  console.log(folders);
   // Group bookmarks by folder
-  const groupedBookmarks = bookmarks.reduce<{ [folder: string]: Bookmark[] }>((acc, bookmark) => {
-    const { folder, name } = bookmark;
+  const groupedBookmarks = bookmarks.reduce<{ [folderName: string]: Bookmark[] }>((acc, bookmark) => {
+    const { name } = bookmark.folder;
     if (name) {
-      if (!acc[folder]) {
-        acc[folder] = [];
+      if (!acc[name]) {
+        acc[name] = [];
       }
-      acc[folder].push(bookmark);
+      acc[name].push(bookmark);
     }
     return acc;
   }, {});
@@ -92,8 +125,8 @@ function App() {
         ) : error ? (
           <p>Error: {error}</p>
         ) : (
-          Object.keys(groupedBookmarks).map(folder => {
-            const filteredBookmarks = groupedBookmarks[folder].filter(bookmark =>
+          Object.keys(groupedBookmarks).map(folderName => {
+            const filteredBookmarks = groupedBookmarks[folderName].filter(bookmark =>
               bookmark.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
@@ -102,8 +135,8 @@ function App() {
             }
 
             return (
-              <div key={folder}>
-                <h2>{folder}</h2>
+              <div key={folderName}>
+                <h2>{folderName}</h2>
                 <ul>
                   {filteredBookmarks.map(bookmark => (
                     <li key={bookmark.id}>
