@@ -73,7 +73,7 @@ function EditFolder() {
     e.preventDefault();
     if (selectedBookmark) {
       try {
-        const response = await fetch(`http://localhost:5000/api/bookmarks/${selectedBookmark.id}`, {
+        const response = await fetch(`https://backend-mini-app-buildpsace-2d3f53b0a656.herokuapp.com/api/bookmarks/${selectedBookmark.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
