@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, useLocation  } from 'react-router-dom';
 
 interface Bookmark {
   id: number;
@@ -14,6 +14,9 @@ interface Bookmark {
 }
 
 function EditFolder() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const folderName = params.get('folderName');
   const { id } = useParams<{ id: string }>();
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,32 +116,34 @@ function EditFolder() {
   };
 
   return (
-    <div>
-      <Link to="/" className="block mb-4 text-blue-500 hover:underline">
+    <div className="py-2">
+      <Link to="/" className="text-white hover:underline py-5">
         &lt; Back to Previous Page
       </Link>
-      <h2>Edit Folder</h2>
+      <h2>{folderName}</h2>
       {loading ? (
         <p>Loading bookmarks...</p>
       ) : error ? (
         <p>Error: {error}</p>
       ) : (
-        <ul>
-          {bookmarks.map(bookmark => (
-            <li key={bookmark.id}>
-              <div className='flex justify-between space-x-10 items-center pt-5'>
-                <a href={bookmark.link} className="menu-link">
-                  {truncateName(bookmark.name, 30)}
-                </a>
-              </div>
-              <div className='border-b border-gray-300 pb-5'>
-                <Link to={`/edit-folder`} className="rounded px-4 py-2 text-xs text-green-500 hover:bg-green-500 hover:text-green-100 duration-300">Mark as read</Link>
-                <button onClick={() => handleEditClick(bookmark)} className="rounded px-4 py-2 text-xs text-white hover:bg-white hover:text-black duration-300">Edit</button>
-                <Link to={`/edit-folder`} className="rounded px-4 py-2 text-xs text-red-500 hover:bg-red-500 hover:text-red-100 duration-300">Delete</Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="max-w-full mx-auto border border-gray-200">
+          <ul>
+            {bookmarks.map(bookmark => (
+              <li key={bookmark.id}>
+                <div className='flex justify-between space-x-10 items-center pt-5'>
+                  <a href={bookmark.link} className="menu-link">
+                    {truncateName(bookmark.name, 30)}
+                  </a>
+                </div>
+                <div className='border-b border-gray-300 pb-5'>
+                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline btn-success">Mark as read</Link>
+                  <button onClick={() => handleEditClick(bookmark)} className="btn btn-sm btn-outline btn-info">Edit</button>
+                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline btn-error">Delete</Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {showModal && selectedBookmark && (
