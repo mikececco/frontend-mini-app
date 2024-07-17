@@ -136,9 +136,9 @@ function EditFolder() {
                   </a>
                 </div>
                 <div className='border-b border-gray-300 pb-5'>
-                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline btn-success">Mark as read</Link>
-                  <button onClick={() => handleEditClick(bookmark)} className="btn btn-sm btn-outline btn-info">Edit</button>
-                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline btn-error">Delete</Link>
+                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline bg-green-200 text-green-800 rounded-none">Mark as read</Link>
+                  <button onClick={() => handleEditClick(bookmark)} className="btn btn-sm btn-outline bg-blue-200 text-blue-800 rounded-none">Edit</button>
+                  <Link to={`/edit-folder`} className="btn btn-sm btn-outline bg-red-200 text-red-800 rounded-none">Delete</Link>
                 </div>
               </li>
             ))}

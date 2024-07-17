@@ -10,6 +10,7 @@ interface Bookmark {
   updated_at: Date;
   created_at: Date;
   content: string;
+  tags: string;
   folderId: number;
   name: string;
   folder: Folder; // Include the folder object in Bookmark interface
@@ -112,14 +113,14 @@ function Home() {
 
   return (
     <div className="py-2">
-      <h3>Your Active Bookmarks</h3>
+      <h3>YOUR ACTIVE BOOKMARKS</h3>
       <div className="list--centre-justify">
         <input
           type="text"
           placeholder="Looking for..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="input input-bordered input-sm w-full max-w-xs"
+          className="input input-bordered  rounded-none input-sm w-full max-w-xs"
         />
         {loading ? (
           <p>Loading bookmarks...</p>
@@ -144,7 +145,7 @@ function Home() {
                   {folder && (
                     <Link
                     to={`/edit-folder/${folder.id}?folderName=${encodeURIComponent(folderName)}`}
-                    className="btn btn-sm btn-outline"
+                    className="btn btn-sm btn-outline bg-gray-200 text-gray-800 rounded-none"
                     >
                       Edit folder
                     </Link>
@@ -153,10 +154,23 @@ function Home() {
                 <div className="flex justify-between items-center ml-1">
                   <ul>
                     {filteredBookmarks.map(bookmark => (
-                      <li key={bookmark.id}>
+                      <li key={bookmark.id} className='max-w-full mx-auto border border-gray-200'>
                         <a href={bookmark.link} className="menu-link">
                           {truncateName(bookmark.name, 30)}
                         </a>
+                        {bookmark.tags ? (
+                          <div className="flex flex-wrap space-x-2">
+                            {bookmark.tags.split(',').map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-block bg-blue-200 text-blue-800 text-xs font-semibold mr-2 px-1"
+                                style={{ fontSize: '0.5rem' }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                         <p>
                           {truncateName(bookmark.content, 30)}
                         </p>
